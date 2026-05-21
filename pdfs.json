@@ -1,17 +1,7 @@
 [
   {
-    "title": "Artificial Intelligence",
-    "file": "pdfs/ai.pdf",
-    "thumbnail": "assets/cover.jpg"
-  },
-  {
-    "title": "Machine Learning",
-    "file": "pdfs/ml.pdf",
-    "thumbnail": "assets/cover.jpg"
-  },
-  {
-    "title": "Reinforcement Learning",
-    "file": "pdfs/rl.pdf",
+    "title": "Model Selection Phase 1",
+    "file": "pdfs/model_selection_phase1.pdf",
     "thumbnail": "assets/cover.jpg"
   }
 ]
