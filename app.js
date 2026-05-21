@@ -16,8 +16,9 @@ async function loadPDFs() {
             <div class="card-content">
                 <h3>${pdf.title}</h3>
 
-                <a class="btn"
-                   href="viewer.html?file=${pdf.file}">
+                <a class="btn view-btn"
+                   href="viewer.html?file=${encodeURIComponent(pdf.file)}"
+                   data-file="${pdf.file}">
                    View
                 </a>
 
@@ -28,6 +29,10 @@ async function loadPDFs() {
                 </a>
             </div>
         `;
+
+        card.querySelector('.view-btn').addEventListener('click', () => {
+            sessionStorage.setItem('pdfToView', pdf.file);
+        });
 
         grid.appendChild(card);
 

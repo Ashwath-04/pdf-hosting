@@ -8,7 +8,8 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+  <!-- v4.0.379 has no pdf.min.js on cdnjs (404); v3.11 works with classic script tags -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 
 <body>
@@ -19,6 +20,8 @@
 
 <div style="padding:20px">
 
+  <a href="index.html" class="btn">← Library</a>
+
   <a id="downloadBtn"
      class="btn btn-download">
      Download PDF
@@ -27,47 +30,73 @@
 </div>
 
 <div id="viewer" class="viewer-container"></div>
+<p id="status" style="text-align:center;color:#6b7280;padding:20px"></p>
 
 <script>
 
-const urlParams = new URLSearchParams(window.location.search);
-const pdfFile = urlParams.get('file');
+// Required for PDF.js 4.x — without this, in-browser view stays blank
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-document.getElementById('downloadBtn')
-        .href = pdfFile;
+function getPdfFileFromUrl() {
+  const fromQuery = new URLSearchParams(window.location.search).get('file');
+  if (fromQuery) return fromQuery;
 
-pdfjsLib.getDocument(pdfFile).promise.then(pdf => {
+  // Fallback when cleanUrls redirect drops ?file= (Vercel /viewer)
+  const fromStorage = sessionStorage.getItem('pdfToView');
+  if (fromStorage) {
+    sessionStorage.removeItem('pdfToView');
+    return fromStorage;
+  }
 
-    for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+  if (window.location.hash.length > 1) {
+    return decodeURIComponent(window.location.hash.slice(1));
+  }
 
-        pdf.getPage(pageNum).then(page => {
+  return null;
+}
 
-            const scale = 1.5;
+const pdfFile = getPdfFileFromUrl();
+const statusEl = document.getElementById('status');
+const viewerEl = document.getElementById('viewer');
 
-            const viewport = page.getViewport({
-                scale
-            });
+if (!pdfFile) {
+  statusEl.textContent = 'No PDF file specified. Go back to the home page and click View on a document.';
+} else if (window.location.protocol === 'file:') {
+  statusEl.textContent =
+    'Open this site through a local server (e.g. vercel dev or npx serve), not by double-clicking index.html.';
+  document.getElementById('downloadBtn').href = pdfFile;
+} else {
+  document.getElementById('downloadBtn').href = pdfFile;
+  statusEl.textContent = 'Loading PDF…';
 
-            const canvas = document.createElement('canvas');
+  pdfjsLib.getDocument(pdfFile).promise.then(async pdf => {
+    statusEl.textContent = '';
 
-            const context = canvas.getContext('2d');
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
 
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
 
-            document.getElementById('viewer')
-                    .appendChild(canvas);
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
 
-            page.render({
-                canvasContext: context,
-                viewport: viewport
-            });
+      viewerEl.appendChild(canvas);
 
-        });
-
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
     }
-
-});
+  }).catch(err => {
+    console.error(err);
+    statusEl.textContent =
+      'Could not load PDF in the viewer. Try Download, or run the app with: npx serve .';
+  });
+}
 
 </script>
 
