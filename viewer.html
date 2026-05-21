@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <title>PDF Viewer</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+</head>
+
+<body>
+
+<header>
+  <h1>PDF Viewer</h1>
+</header>
+
+<div style="padding:20px">
+
+  <a id="downloadBtn"
+     class="btn btn-download">
+     Download PDF
+  </a>
+
+</div>
+
+<div id="viewer" class="viewer-container"></div>
+
+<script>
+
+const urlParams = new URLSearchParams(window.location.search);
+const pdfFile = urlParams.get('file');
+
+document.getElementById('downloadBtn')
+        .href = pdfFile;
+
+pdfjsLib.getDocument(pdfFile).promise.then(pdf => {
+
+    for(let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+
+        pdf.getPage(pageNum).then(page => {
+
+            const scale = 1.5;
+
+            const viewport = page.getViewport({
+                scale
+            });
+
+            const canvas = document.createElement('canvas');
+
+            const context = canvas.getContext('2d');
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            document.getElementById('viewer')
+                    .appendChild(canvas);
+
+            page.render({
+                canvasContext: context,
+                viewport: viewport
+            });
+
+        });
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

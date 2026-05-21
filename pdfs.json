@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Artificial Intelligence",
+    "file": "pdfs/ai.pdf",
+    "thumbnail": "assets/cover.jpg"
+  },
+  {
+    "title": "Machine Learning",
+    "file": "pdfs/ml.pdf",
+    "thumbnail": "assets/cover.jpg"
+  },
+  {
+    "title": "Reinforcement Learning",
+    "file": "pdfs/rl.pdf",
+    "thumbnail": "assets/cover.jpg"
+  }
+]
